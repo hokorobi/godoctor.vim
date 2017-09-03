@@ -49,4 +49,4 @@ command! -range=% -nargs=+ -complete=custom,<sid>list_refacs GoRefactor
   \ call godoctor#RunDoctor(<count>, <f-args>)
 
 command! -range=% -nargs=+ -complete=custom,<sid>list_refacs Refactor
-  \ call s:RunDoctor(<count>, <f-args>)
+  \ call godoctor#RunDoctor(<count>, <f-args>)
