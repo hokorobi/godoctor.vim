@@ -272,7 +272,7 @@ function! s:interpret(cmd) abort
 
   let g:allbuffers = []
   let g:newbuffers = []
-endfunc
+endfunction
 
 " Populate the quickfix list with the refactoring log, and populate each
 " window's location list with the positions the refactoring modified.
