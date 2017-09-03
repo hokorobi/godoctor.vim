@@ -125,7 +125,7 @@ function! s:is_multifile(refac) abort
     endfor
   endif
   return 1
-endfun
+endfunction
 
 " Parse the godoctor -complete output and store files' contents in a
 " dictionary mapping filenames to their contents.
@@ -171,7 +171,7 @@ function! s:parsefiles(output) abort
   endwhile
 
   return result
-endfun
+endfunction
 
 " List of all buffers modified by the most recent refactoring
 let g:allbuffers = []
@@ -232,7 +232,7 @@ function! s:loadfiles(files, used_stdin) abort
     " Hyperlink each line to be interpreted by s:interpret
     nnoremap <silent> <buffer> <CR> :call <sid>interpret(getline('.'))<CR>
   endif
-endfun
+endfunction
 
 " Callback for hyperlinks displayed above (to save, undo, and close buffers)
 function! s:interpret(cmd) abort
@@ -357,7 +357,7 @@ function! s:qfloclist(output, used_stdin) abort
       cwindow
     endif
   endif
-endfun
+endfunction
 
 " Run the Go Doctor with the given selection, refactoring name, and arguments.
 func! godoctor#RunDoctor(selected, refac, ...) range abort
@@ -429,7 +429,7 @@ func! godoctor#RunDoctor(selected, refac, ...) range abort
   let files = s:parsefiles(out)
   call s:loadfiles(files, cur_buf_file ==# '')
   call s:qfloclist(out, cur_buf_file ==# '')
-endfun
+endfunction
 
 " List the available refactorings, one per line.  Used for auto-completion.
 function! s:list_refacs(a, l, p) abort
@@ -449,7 +449,7 @@ function! s:list_refacs(a, l, p) abort
     endfor
   endif
   return result
-endfun
+endfunction
 
 " Run the Rename refactoring with the given arguments.  If a new name is not
 " provided, prompt for one.
@@ -464,4 +464,4 @@ func! godoctor#RunRename(selected, ...) range abort
       call godoctor#RunDoctor(a:selected, 'rename', input)
     endif
   endif
-endfun
+endfunction
