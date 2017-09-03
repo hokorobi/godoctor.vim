@@ -1,13 +1,12 @@
 " ~stolen from github.com/fatih/vim-go -- same license
 
-
 " GoDoctorInstall downloads and install all necessary binaries stated in the
 " packages variable. It uses by default $GOPATH/bin as the binary
 " target install directory. Either installs or attempts update.
-function! godoctor#installGodoctor()
-    if $GOPATH == ""
+function! godoctor#installGodoctor() abort
+    if $GOPATH ==# ''
         echohl Error
-        echomsg "vim.go: $GOPATH is not set"
+        echomsg 'vim.go: $GOPATH is not set'
         echohl None
         return
     endif
@@ -27,33 +26,33 @@ function! godoctor#installGodoctor()
         set noshellslash
     endif
 
-    let cmd = "go get -u -v "
+    let cmd = 'go get -u -v '
 
-    let s:go_version = matchstr(system("go version"), '\d.\d.\d')
+    let s:go_version = matchstr(system('go version'), '\d.\d.\d')
 
     " https://github.com/golang/go/issues/10791
-    if s:go_version > "1.4.0" && s:go_version < "1.5.0"
-        let cmd .= "-f " 
+    if s:go_version > '1.4.0' && s:go_version < '1.5.0'
+        let cmd .= '-f ' 
     endif
 
-    let pkg = "github.com/godoctor/godoctor"
+    let pkg = 'github.com/godoctor/godoctor'
 
     let out = system(cmd . shellescape(pkg))
     if v:shell_error
-        echo "Error installing ". pkg . ": " . out
+        echo 'Error installing '. pkg . ': ' . out
     endif
 endfunction
 
 " CheckBinaries checks if the necessary binaries to install the Go tool
 " commands are available.
-function! s:CheckBinaries()
+function! s:CheckBinaries() abort
     if !executable('go')
-        echohl Error | echomsg "vim-go: go executable not found." | echohl None
+        echohl Error | echomsg 'vim-go: go executable not found.' | echohl None
         return -1
     endif
 
     if !executable('git')
-        echohl Error | echomsg "vim-go: git executable not found." | echohl None
+        echohl Error | echomsg 'vim-go: git executable not found.' | echohl None
         return -1
     endif
 endfunction
@@ -92,10 +91,10 @@ endfunction
 " http://vimdoc.sourceforge.net/htmldoc/eval.html
 
 " Get the path to the godoctor executable.  Run once to assign s:go_doctor.
-func! s:go_doctor_bin()
+function! s:go_doctor_bin() abort
   let [ext, sep] = (has('win32') || has('win64') ? ['.exe', ';'] : ['', ':'])
   let go_doctor = globpath(join(split($GOPATH, sep), ','), '/bin/godoctor' . ext)
-  if go_doctor == ''
+  if go_doctor ==# ''
     let go_doctor = 'godoctor' . ext
   endif
   return go_doctor
@@ -106,21 +105,21 @@ let s:go_doctor = s:go_doctor_bin()
 
 " Return 0 if the given refactoring can only change the file in the editor,
 " or 1 if it may affect other files as well.
-function! s:is_multifile(refac)
+function! s:is_multifile(refac) abort
   let out = system(printf('%s --list', s:go_doctor))
   if v:shell_error
     return 1
   endif
-  let result = ""
+  let result = ''
   let lines = split(out, "\n")
   if len(lines) > 2
     for line in lines[2:]
       let fields = split(line, "\t")
       if len(fields) >= 3
-        let name = substitute(fields[0], "^\\s\\+\\|\\s\\+$", "", "g") 
-        let multi = substitute(fields[2], "^\\s\\+\\|\\s\\+$", "", "g") 
+        let name = substitute(fields[0], "^\\s\\+\\|\\s\\+$", '', 'g') 
+        let multi = substitute(fields[2], "^\\s\\+\\|\\s\\+$", '', 'g') 
         if name ==? a:refac
-          return multi ==? "true"
+          return multi ==? 'true'
         endif
       endif
     endfor
@@ -144,7 +143,7 @@ endfun
 "     ...
 "     @@@@@ filenamen @@@@@ num_bytes @@@@@
 "     filen contents
-func! s:parsefiles(output)
+function! s:parsefiles(output) abort
   let result = {}
   let pattern = '@@@@@ \([^@]\+\) @@@@@ \(\d\+\) @@@@@\(\|\r\)\n'
   let start = match(a:output, pattern, 0)
@@ -181,10 +180,10 @@ let g:allbuffers = []
 let g:newbuffers = []
 
 " Open all refactored files in (hidden) buffers.
-func! s:loadfiles(files, used_stdin)
+function! s:loadfiles(files, used_stdin) abort
   " Save original view
   let view = winsaveview()
-  let orig = bufnr("%")
+  let orig = bufnr('%')
 
   if &hidden == 0
     set hidden
@@ -199,34 +198,34 @@ func! s:loadfiles(files, used_stdin)
     else
       " Get or create buffer, and fill with refactored file contents
       let oldnr = bufnr(fnameescape(file))
-      exec "badd ".fnameescape(file)
+      exec 'badd '.fnameescape(file)
       let nr = bufnr(fnameescape(file))
     endif
     call add(g:allbuffers, nr)
     if oldnr < 0
       call add(g:newbuffers, nr)
     endif
-    silent exec "buffer! ".nr
     silent :1,$delete
+    silent exec 'buffer! '.nr
     silent :put =a:files[file]
     silent :1delete _
   endfor
 
   " Restore original cursor position, windows, etc.
-  silent exec "buffer! ".orig
+  silent exec 'buffer! '.orig
   call winrestview(view)
 
   " If >1 file modified, display hyperlinks to make saving and undoing easier
   if len(a:files) > 1
-    exec "topleft 3new"
-    call setline(1, "Save Changes & Close New Buffers     " .
-                  \ "  .-. .-.   .-. .-. .-. .-. .-. .-.  ")
-    call setline(2, "Undo Changes & Close New Buffers     " .
-                  \ "  |.. | |   |  )| | |    |  | | |(   ")
-    call setline(3, "Save Changes                         " .
+    exec 'topleft 3new'
+    call setline(1, 'Save Changes & Close New Buffers     ' .
+                  \ '  .-. .-.   .-. .-. .-. .-. .-. .-.  ')
+    call setline(2, 'Undo Changes & Close New Buffers     ' .
+                  \ '  |.. | |   |  )| | |    |  | | |(   ')
+    call setline(3, 'Save Changes                         ' .
                   \ "  `-' `-'   `-' `-' `-'  '  `-' ' '  ")
-    call setline(4, "Undo Changes")
-    call setline(5, "Close This Window")
+    call setline(4, 'Undo Changes')
+    call setline(5, 'Close This Window')
     setlocal nomodifiable buftype=nofile bufhidden=wipe nobuflisted noswapfile
     " Fix its height so, e.g., it doesn't grow when quickfix list is closed
     setlocal wfh
@@ -236,37 +235,37 @@ func! s:loadfiles(files, used_stdin)
 endfun
 
 " Callback for hyperlinks displayed above (to save, undo, and close buffers)
-func! s:interpret(cmd)
+function! s:interpret(cmd) abort
   if winnr('$') > 1
     close
   endif
   let view = winsaveview()
-  let orig = bufnr("%")
+  let orig = bufnr('%')
 
-  if a:cmd =~ "Save Changes"
+  if a:cmd =~# 'Save Changes'
     for buf in g:allbuffers
       if bufexists(buf)
-        silent exec "buffer! " . buf . " | w"
+        silent exec 'buffer! ' . buf . ' | w'
       endif
     endfor
-  elseif a:cmd =~ "Undo Changes"
+  elseif a:cmd =~# 'Undo Changes'
     for buf in g:allbuffers
       if bufexists(buf)
-        silent exec "buffer! " . buf . " | undo"
+        silent exec 'buffer! ' . buf . ' | undo'
       endif
     endfor
   endif
   cclose
 
   if bufexists(orig)
-    silent exec "buffer! ".orig
+    silent exec 'buffer! '.orig
   endif
   call winrestview(view)
 
-  if a:cmd =~ "Close New"
+  if a:cmd =~# 'Close New'
     for buf in g:newbuffers
       if buf != orig && bufexists(buf)
-        silent exec buf . "bwipeout!"
+        silent exec buf . 'bwipeout!'
       endif
     endfor
   endif
@@ -277,14 +276,14 @@ endfunc
 
 " Populate the quickfix list with the refactoring log, and populate each
 " window's location list with the positions the refactoring modified.
-func! s:qfloclist(output, used_stdin)
+function! s:qfloclist(output, used_stdin) abort
   let has_errors = 0
   let qflist = []
   let loclists = {}
   " Parse GNU-style 'file:line.col-line.col: message' format.
   let mx = '^\(\a:[\\/][^:]\+\|[^:]\+\):\(\d\+\):\(\d\+\):\(.*\)$'
   for line in split(a:output, "\n")
-    if line =~ '^@@@@@'
+    if line =~# '^@@@@@'
       " The log is displayed before files' contents, so as soon as we see a
       " @@@@@ line, we have seen the last log message; no need to keep looking
       break
@@ -305,7 +304,7 @@ func! s:qfloclist(output, used_stdin)
         \  'text': ml[4],
         \}
         let bname = bufname('%')
-        if bname != ""
+        if bname !=# ''
           let item['filename'] = bname
         endif
       else
@@ -321,15 +320,15 @@ func! s:qfloclist(output, used_stdin)
         endif
       endif
     endif
-    if item['text'] =~ 'rror:'
+    if item['text'] =~# 'rror:'
       let item['type'] = 'E'
       let has_errors = 1
-    elseif item['text'] =~ 'arning:'
+    elseif item['text'] =~# 'arning:'
       let item['type'] = 'W'
     else
       let item['type'] = 'I'
     endif
-    if has_key(item, 'filename') && item['text'] =~ '^ | '
+    if has_key(item, 'filename') && item['text'] =~# '^ | '
       if !has_key(loclists, item['filename'])
         let loclists[item['filename']] = []
       endif
@@ -372,33 +371,33 @@ func! godoctor#RunDoctor(selected, refac, ...) range abort
   " So, check that there is at most one unsaved buffer, and it has no name.
 
   for i in range(1, bufcount)
-    if bufexists(i) && getbufvar(i, "&mod") && bufname(i) != ""
+    if bufexists(i) && getbufvar(i, '&mod') && bufname(i) !=# ''
       echohl Error
-         \ | echom bufname(i) . " has unsaved changes; please save before refactoring"
+         \ | echom bufname(i) . ' has unsaved changes; please save before refactoring'
          \ | echohl None
       return
     endif
   endfor
 
-  if !exists("g:doctor_scope")
-    let s:scope = ""
+  if !exists('g:doctor_scope')
+    let s:scope = ''
   else
-    let s:scope = " -scope=".shellescape(g:doctor_scope)
+    let s:scope = ' -scope='.shellescape(g:doctor_scope)
   endif
 
-  if cur_buf_file == ""
+  if cur_buf_file ==# ''
     " Read file from standard input
-    let file = " -file=-"
+    let file = ' -file=-'
   else
-    let file = printf(" -file=%s", cur_buf_file)
+    let file = printf(' -file=%s', cur_buf_file)
   endif
 
   if a:selected != -1
-    let pos = printf(" -pos=%d,%d:%d,%d",
+    let pos = printf(' -pos=%d,%d:%d,%d',
       \ line("'<"), col("'<"),
       \ line("'>"), col("'>"))
   else
-    let pos = printf(" -pos=%d,%d:%d,%d",
+    let pos = printf(' -pos=%d,%d:%d,%d',
       \ line('.'), col('.'),
       \ line('.'), col('.'))
   endif
@@ -409,11 +408,11 @@ func! godoctor#RunDoctor(selected, refac, ...) range abort
     \ pos,
     \ shellescape(a:refac),
     \ join(map(copy(a:000), 'shellescape(v:val)'), ' '))
-  if cur_buf_file == ""
+  if cur_buf_file ==# ''
     let cur_buf_contents = join(getline(1,'$'), "\n")
-    if cur_buf_contents == ""
+    if cur_buf_contents ==# ''
       echohl Error
-        \ | echom "The current buffer is empty; cannot refactor"
+        \ | echom 'The current buffer is empty; cannot refactor'
         \ | echohl None
       return
     endif
@@ -428,23 +427,23 @@ func! godoctor#RunDoctor(selected, refac, ...) range abort
     echohl Error | echom lines[0] | echohl None
   endif
   let files = s:parsefiles(out)
-  call s:loadfiles(files, cur_buf_file == "")
-  call s:qfloclist(out, cur_buf_file == "")
+  call s:loadfiles(files, cur_buf_file ==# '')
+  call s:qfloclist(out, cur_buf_file ==# '')
 endfun
 
 " List the available refactorings, one per line.  Used for auto-completion.
-function! s:list_refacs(a, l, p)
+function! s:list_refacs(a, l, p) abort
   let out = system(printf('%s --list', s:go_doctor))
   if v:shell_error
-    return ""
+    return ''
   endif
-  let result = ""
+  let result = ''
   let lines = split(out, "\n")
   if len(lines) > 2
     for line in lines[2:]
       let fields = split(line, "\t")
       if len(fields) >= 1
-        let name = substitute(fields[0], "^\\s\\+\\|\\s\\+$", "", "g") 
+        let name = substitute(fields[0], "^\\s\\+\\|\\s\\+$", '', 'g') 
         let result = result . name . "\n"
       endif
     endfor
@@ -456,11 +455,11 @@ endfun
 " provided, prompt for one.
 func! godoctor#RunRename(selected, ...) range abort
   if len(a:000) > 0
-    call call("godoctor#RunDoctor", [a:selected, 'rename'] + a:000)
+    call call('godoctor#RunDoctor', [a:selected, 'rename'] + a:000)
   else
-    let input = inputdialog("Enter new name: ")
-    if input == ""
-      echo ""
+    let input = inputdialog('Enter new name: ')
+    if input ==# ''
+      echo ''
     else
       call godoctor#RunDoctor(a:selected, 'rename', input)
     endif
